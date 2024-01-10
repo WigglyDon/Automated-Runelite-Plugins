@@ -3,6 +3,7 @@ package com.piggyplugins;
 import com.example.EthanApiPlugin.EthanApiPlugin;
 import com.example.PacketUtils.PacketUtilsPlugin;
 import com.example.UpkeepPlugin.UpkeepPlugin;
+import com.jrplugins.autoVorkath.AutoVorkathPlugin;
 import com.piggyplugins.AutoAerial.AutoAerialPlugin;
 import com.piggyplugins.CannonReloader.CannonReloaderPlugin;
 import com.piggyplugins.Firemaking.FiremakingPlugin;
@@ -19,6 +20,8 @@ import com.polyplugins.KittenFeeder.KittenFeederPlugin;
 import com.polyplugins.Trapper.AutoTrapperPlugin;
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
+import com.jrplugins.autoVorkath.AutoVorkathPlugin;
+
 
 public class PluginTester {
     public static void main(String[] args) throws Exception {
@@ -26,7 +29,8 @@ public class PluginTester {
                 AutoCombatPlugin.class, AutoAerialPlugin.class, AutoBonerPlugin.class,
                 ButterflyPlugin.class, FiremakingPlugin.class, DialogueContinuerPlugin.class,
                 KittenFeederPlugin.class, AutoChompyPlugin.class, PowerSkillerPlugin.class, AutoTrapperPlugin.class,
-                SpeedDartMakerPlugin.class, RooftopAgilityPlugin.class, UpkeepPlugin.class, PvpHelperPlugin.class, CannonReloaderPlugin.class);
+                SpeedDartMakerPlugin.class, RooftopAgilityPlugin.class, UpkeepPlugin.class, PvpHelperPlugin.class, CannonReloaderPlugin.class,
+                AutoVorkathPlugin.class);
         RuneLite.main(args);
     }
 }

@@ -117,7 +117,8 @@ dependencies {
 //    testImplementation project(path: ':ItemCombiner')
     compileOnly project(path: ':PowerSkiller')
     testImplementation project(path: ':PowerSkiller')
-
+    compileOnly project(path: ':AutoVorkath')
+    testImplementation project(path: ':AutoVorkath')
 }
 
 sourceSets {
