@@ -132,10 +132,18 @@ public interface AutoVorkathConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "drinkat",
+            name = "Drink prayer potion at",
+            description = "Restore prayer when?",
+            position = 12
+    )
+    default int PRAYERAT() { return 50; }
+
+    @ConfigItem(
             keyName = "food",
             name = "Food",
             description = "What food to use? (NOT MANTA RAY!)",
-            position = 12
+            position = 13
     )
     default String FOOD() {
         return "Shark";

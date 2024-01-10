@@ -190,9 +190,8 @@ class AutoVorkathPlugin : Plugin() {
     @Subscribe
     fun onActorDeath(e: ActorDeath) {
         if (e.actor.name == "Zombified Spawn") {
-            activatePrayers(on = true)
-            if (isVorkathAsleep()) {
-                EthanApiPlugin.sendClientMessage("VORKATH IS ASLEEP AFTER SPAWN DIED")
+            if (!isVorkathAsleep()) {
+                changeStateTo(State.FIGHTING, 2);
             }
         }
         if (e.actor.name == "Vorkath") {
@@ -421,6 +420,7 @@ class AutoVorkathPlugin : Plugin() {
                 }
             }
             eat(config.EATAT())
+            drinkPrayer()
             if (Inventory.search().nameContains(config.CROSSBOW().toString()).result().isNotEmpty()) {
                 InventoryInteraction.useItem(config.CROSSBOW().toString(), "Wield")
             }
@@ -686,7 +686,7 @@ class AutoVorkathPlugin : Plugin() {
     private fun inHouse(): Boolean = TileObjects.search().nameContains(config.PORTAL().toString()).result().isNotEmpty()
 
     private fun isMoving(): Boolean = EthanApiPlugin.isMoving() || client.localPlayer.animation != -1
-    private fun needsToDrinkPrayer(): Boolean = client.getBoostedSkillLevel(Skill.PRAYER) <= 50
+    private fun needsToDrinkPrayer(): Boolean = client.getBoostedSkillLevel(Skill.PRAYER) <= config.PRAYERAT();
     private fun readyToFight(): Boolean =
         Inventory.search().nameContains(config.FOOD()).result().size >= config.FOODAMOUNT().height
                 && Inventory.search().nameContains(config.SLAYERSTAFF().toString()).result().isNotEmpty()
