@@ -20,7 +20,6 @@ import com.polyplugins.KittenFeeder.KittenFeederPlugin;
 import com.polyplugins.Trapper.AutoTrapperPlugin;
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
-import com.jrplugins.autoVorkath.AutoVorkathPlugin;
 
 
 public class PluginTester {
