@@ -723,7 +723,7 @@ class AutoVorkathPlugin : Plugin() {
                 return true
             }
         }
-        return false
+//        return false
     }
 
     private fun sendKey(key: Int) {
