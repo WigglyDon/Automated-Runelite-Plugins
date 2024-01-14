@@ -137,11 +137,13 @@ class AutoVorkathPlugin : Plugin() {
             drankRangePotion = false
             drankAntiVenom = false
             isPrepared = false
-            activatePrayers(false)
+            activateProtectPrayer(false)
+            activateRigour(false)
             EthanApiPlugin.stopPlugin(this)
         }
         if (e.message.contains("Your Vorkath kill count is:")) {
-            activatePrayers(false)
+            activateProtectPrayer(false)
+            activateRigour(false)
             drankAntiFire = false
             drankRangePotion = false
             drankAntiVenom = false
@@ -154,7 +156,8 @@ class AutoVorkathPlugin : Plugin() {
             drankRangePotion = false
             drankAntiVenom = false
             isPrepared = false
-            activatePrayers(false)
+            activateProtectPrayer(false)
+            activateRigour(false)
             EthanApiPlugin.stopPlugin(this)
         }
     }
@@ -179,6 +182,7 @@ class AutoVorkathPlugin : Plugin() {
                 InventoryInteraction.useItem(config.CROSSBOW().toString(), "Wield")
             }
             if (isVorkathAsleep()) {
+
                 changeStateTo(State.LOOTING)
             }
             else {
@@ -216,7 +220,10 @@ class AutoVorkathPlugin : Plugin() {
 
             whiteProjectileId -> changeStateTo(State.SPAWN)
             acidRedProjectileId -> changeStateTo(State.ACID)
-            rangeProjectileId, magicProjectileId, purpleProjectileId, blueProjectileId -> activatePrayers(true)
+            rangeProjectileId, magicProjectileId, purpleProjectileId, blueProjectileId -> {
+                activateProtectPrayer(true)
+                activateRigour(true)
+            }
             redProjectileId -> {
                 redBallLocation = WorldPoint.fromLocal(client, e.position)
                 changeStateTo(State.RED_BALL)
@@ -292,7 +299,7 @@ class AutoVorkathPlugin : Plugin() {
 
     private fun acidState() {
         if (!runIsOff()) enableRun()
-        activatePrayers(false)
+        activateProtectPrayer(false)
         if (!inVorkathArea()) {
             acidPools.clear()
             changeStateTo(State.THINKING)
@@ -372,7 +379,8 @@ class AutoVorkathPlugin : Plugin() {
             changeStateTo(State.THINKING)
             return
         }
-        activatePrayers(false) //stop attack
+        activateProtectPrayer(false)
+        activateRigour(false) //stop attack
         if (config.SLAYERSTAFF().toString() != "Rune pouch") {
             if (Equipment.search().nameContains(config.SLAYERSTAFF().toString()).result().isEmpty()) {
                 Inventory.search().nameContains(config.SLAYERSTAFF().toString()).first().ifPresent { staff ->
@@ -396,9 +404,11 @@ class AutoVorkathPlugin : Plugin() {
         }
     }
 
+    var vorkathHpPercent : Int = 100;
     private fun fightingState() {
         if (runIsOff()) enableRun()
-        activatePrayers(true)
+        activateProtectPrayer(true)
+        activateRigour(true)
         acidPools.clear()
         if (!inVorkathArea()) {
             EthanApiPlugin.sendClientMessage("FIGHTING state change to THINKING")
@@ -409,29 +419,39 @@ class AutoVorkathPlugin : Plugin() {
             val vorkathLocation = vorkathNpc.worldLocation;
             val middle = WorldPoint(vorkathLocation.x + 3, vorkathLocation.y - 5, 0)
 
-
-            System.out.println("vorkath npc: $vorkathNpc")
             // hp logic
-            var vorkathHpPercent : Int = 0
+            System.out.print("initial vorkath percent: $vorkathHpPercent\n")
 
-            fun getHpPercentValue(ratio: Int, scale: Int): Int {
+            fun getHpPercentValue(ratio: Float, scale: Float): Int {
                 return Math.round((ratio / scale) * 100f);
             }
             fun updateNpcHp(npc: NPC) {
-                System.out.println("printed npc $npc")
-                val hp: Int = getHpPercentValue(npc.getHealthRatio(), npc.getHealthScale());
+                var currentHp: Int = getHpPercentValue(npc.getHealthRatio().toFloat(), npc.getHealthScale().toFloat());
+                System.out.print("vorkathHpPercent before update: $vorkathHpPercent\n")
+                System.out.println("currentHp $currentHp\n")
 
-                if (vorkathHpPercent > hp && hp > -1) {
-                    vorkathHpPercent = hp;
+                if (currentHp < vorkathHpPercent && currentHp > -1) {
+                    vorkathHpPercent = currentHp;
+                    System.out.println("vorkath hp after update: $vorkathHpPercent\n")
+                }
+                if (currentHp == 0 && vorkathHpPercent == 0) {
+                    vorkathHpPercent = 100;
+                    System.out.println("Vorkath Died! $vorkathHpPercent")
                 }
             }
 
             updateNpcHp(vorkathNpc);
 
-            EthanApiPlugin.sendClientMessage("vokath hp: $vorkathHpPercent")
-
-            // hp logic
-
+            if (vorkathHpPercent <= 35 && vorkathHpPercent > 0) {
+                if (Inventory.search().nameContains("Diamond dragon bolts (e)").result().isNotEmpty()) {
+                    InventoryInteraction.useItem("Diamond dragon bolts (e)", "Wield")
+                }
+            }
+            if (vorkathHpPercent > 35 || vorkathHpPercent == 0) {
+                if (Inventory.search().nameContains("Ruby dragon bolts (e)").result().isNotEmpty()) {
+                    InventoryInteraction.useItem("Ruby dragon bolts (e)", "Wield")
+                }
+            }
 
             if (client.localPlayer.interacting == null) {
                 NPCs.search().nameContains("Vorkath").first().ifPresent { vorkath ->
@@ -476,7 +496,8 @@ class AutoVorkathPlugin : Plugin() {
 
     private fun walkingToVorkathState() {
         if (runIsOff()) enableRun()
-        activatePrayers(false)
+        activateProtectPrayer(false)
+        activateRigour(false)
         if (!isMoving()) {
             if (bankArea.contains(client.localPlayer.worldLocation)) {
                 if (Widgets.search().withTextContains("Click here to continue").result().isNotEmpty()) {
@@ -515,7 +536,8 @@ class AutoVorkathPlugin : Plugin() {
     }
 
     private fun bankingState() {
-        activatePrayers(false)
+        activateProtectPrayer(false)
+        activateRigour(false)
         if (bankArea.contains(client.localPlayer.worldLocation)) {
             if (!isMoving()) {
                 if (!Bank.isOpen()) {
@@ -543,7 +565,8 @@ class AutoVorkathPlugin : Plugin() {
 
     private fun walkingToBankState() {
         if (runIsOff()) enableRun()
-        activatePrayers(false)
+        activateProtectPrayer(false)
+        activateRigour(false)
         if (breakHandler.shouldBreak(this)) { // Break handler
             breakHandler.startBreak(this)
         }
@@ -783,11 +806,11 @@ class AutoVorkathPlugin : Plugin() {
         WidgetPackets.queueWidgetActionPacket(1, 10485787, -1, -1)
     }
 
-    private fun activatePrayers(on: Boolean) {
-        if (config.ACTIVATERIGOUR()) {
-            PrayerInteraction.setPrayerState(Prayer.RIGOUR, on)
-        }
+    private fun activateProtectPrayer(on: Boolean) {
         PrayerInteraction.setPrayerState(Prayer.PROTECT_FROM_MISSILES, on)
+    }
+    private fun activateRigour(on: Boolean) {
+        PrayerInteraction.setPrayerState(Prayer.RIGOUR, on)
     }
 
     private fun teleToHouse() {
