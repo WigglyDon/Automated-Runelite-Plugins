@@ -419,24 +419,17 @@ class AutoVorkathPlugin : Plugin() {
             val vorkathLocation = vorkathNpc.worldLocation;
             val middle = WorldPoint(vorkathLocation.x + 3, vorkathLocation.y - 5, 0)
 
-            // hp logic
-            System.out.print("initial vorkath percent: $vorkathHpPercent\n")
-
             fun getHpPercentValue(ratio: Float, scale: Float): Int {
                 return Math.round((ratio / scale) * 100f);
             }
             fun updateNpcHp(npc: NPC) {
                 var currentHp: Int = getHpPercentValue(npc.getHealthRatio().toFloat(), npc.getHealthScale().toFloat());
-                System.out.print("vorkathHpPercent before update: $vorkathHpPercent\n")
-                System.out.println("currentHp $currentHp\n")
 
                 if (currentHp < vorkathHpPercent && currentHp > -1) {
                     vorkathHpPercent = currentHp;
-                    System.out.println("vorkath hp after update: $vorkathHpPercent\n")
                 }
                 if (currentHp == 0 && vorkathHpPercent == 0) {
                     vorkathHpPercent = 100;
-                    System.out.println("Vorkath Died! $vorkathHpPercent")
                 }
             }
 
