@@ -405,8 +405,34 @@ class AutoVorkathPlugin : Plugin() {
             changeStateTo(State.THINKING)
             return
         } else {
-            val vorkath = NPCs.search().nameContains("Vorkath").first().get().worldLocation
-            val middle = WorldPoint(vorkath.x + 3, vorkath.y - 5, 0)
+            var vorkathNpc: NPC = NPCs.search().nameContains("Vorkath").first().get();
+            val vorkathLocation = vorkathNpc.worldLocation;
+            val middle = WorldPoint(vorkathLocation.x + 3, vorkathLocation.y - 5, 0)
+
+
+            System.out.println("vorkath npc: $vorkathNpc")
+            // hp logic
+            var vorkathHpPercent : Int = 0
+
+            fun getHpPercentValue(ratio: Int, scale: Int): Int {
+                return Math.round((ratio / scale) * 100f);
+            }
+            fun updateNpcHp(npc: NPC) {
+                System.out.println("printed npc $npc")
+                val hp: Int = getHpPercentValue(npc.getHealthRatio(), npc.getHealthScale());
+
+                if (vorkathHpPercent > hp && hp > -1) {
+                    vorkathHpPercent = hp;
+                }
+            }
+
+            updateNpcHp(vorkathNpc);
+
+            EthanApiPlugin.sendClientMessage("vokath hp: $vorkathHpPercent")
+
+            // hp logic
+
+
             if (client.localPlayer.interacting == null) {
                 NPCs.search().nameContains("Vorkath").first().ifPresent { vorkath ->
                     NPCInteraction.interact(vorkath, "Attack")
