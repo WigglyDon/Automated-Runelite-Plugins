@@ -44,4 +44,8 @@ include 'StrategyExample'
 include 'BetterProfiles'
 include 'CluePuzzleSolver'
 include 'LeftClickBlackJack'
+include 'AutoVardorvis'
+include 'AutoVorkath'
+include 'AutoHerblore'
+include 'AutoCrafting'
 

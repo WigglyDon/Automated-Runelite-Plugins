@@ -12,6 +12,12 @@ allprojects {
         }
         mavenCentral()
         jcenter()
+        maven {
+            url 'https://maven.google.com'
+        }
+        maven {
+            url 'https://jitpack.io'
+        }
     }
 
     def runeLiteVersion = '1.10.36.1'
@@ -27,7 +33,6 @@ allprojects {
         }
     }
 }
-
 dependencies {
     implementation project(path: ':AutoTitheFarm')
     implementation project(path: ':AutoAerial')
@@ -72,6 +77,10 @@ dependencies {
     implementation project(path: ':BetterProfiles')
     implementation project(path: ':PathingTesting')
     implementation project(path: ':LeftClickBlackJack')
+    implementation project(path: ':AutoVardorvis')
+    implementation project(path: ':AutoVorkath')
+    implementation project(path: ':AutoHerblore')
+    implementation project(path: ':AutoCrafting')
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
 }
 
@@ -109,6 +118,11 @@ task PiggyJar(type: Jar) {
 }
 
 subprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
     tasks.withType(Jar) {
         doLast {
             copy {

@@ -39,6 +39,9 @@ public class BankItemWidget implements Widget {
     }
 
     @Override
+    public void clearActions(){};
+
+    @Override
     public int getContentType() {
         return 0;
     }
@@ -498,11 +501,6 @@ public class BankItemWidget implements Widget {
 
     @Override
     public void setAction(int index, String action) {
-
-    }
-
-    @Override
-    public void clearActions() {
 
     }
 

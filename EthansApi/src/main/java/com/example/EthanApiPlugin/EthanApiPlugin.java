@@ -2,6 +2,8 @@ package com.example.EthanApiPlugin;
 
 import com.example.EthanApiPlugin.Collections.*;
 import com.example.EthanApiPlugin.Collections.query.QuickPrayer;
+import com.example.EthanApiPlugin.PathFinding.Node;
+import com.example.PacketUtils.ObfuscatedNames;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -10,12 +12,10 @@ import lombok.SneakyThrows;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.GameTick;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.RuneLite;
 import net.runelite.client.eventbus.EventBus;
-import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -106,7 +106,7 @@ public class EthanApiPlugin extends Plugin {
     public static SkullIcon getSkullIcon(Player player) {
         Field skullField = null;
         try {
-            skullField = player.getClass().getDeclaredField("ag");
+            skullField = player.getClass().getDeclaredField(ObfuscatedNames.skullIconField);
             skullField.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
@@ -114,7 +114,7 @@ public class EthanApiPlugin extends Plugin {
         }
         int var1 = -1;
         try {
-            var1 = skullField.getInt(player) * -227316761;
+            var1 = skullField.getInt(player) * ObfuscatedNames.skullIconMultiplier;
             skullField.setAccessible(false);
         } catch (IllegalAccessException | NullPointerException e) {
             e.printStackTrace();
@@ -176,7 +176,7 @@ public class EthanApiPlugin extends Plugin {
                 }
                 int value = declaredField.getInt(npc);
                 declaredField.setInt(npc, 4795789);
-                if (npc.getAnimation() == -614178723 * 4795789) {
+                if (npc.getAnimation() == ObfuscatedNames.getAnimationMultiplier * 4795789) {
                     animationField = declaredField.getName();
                     declaredField.setInt(npc, value);
                     declaredField.setAccessible(false);
@@ -191,13 +191,13 @@ public class EthanApiPlugin extends Plugin {
         }
         Field animation = npc.getClass().getSuperclass().getDeclaredField(animationField);
         animation.setAccessible(true);
-        int anim = animation.getInt(npc) * -614178723;
+        int anim = animation.getInt(npc) * ObfuscatedNames.getAnimationMultiplier;
         animation.setAccessible(false);
         return anim;
     }
 
 
-    //    @SneakyThrows
+//    @SneakyThrows
 //    public static int pathLength(NPC npc) {
 //        Field pathLength = npc.getClass().getSuperclass().getDeclaredField("dk");
 //        pathLength.setAccessible(true);
@@ -214,36 +214,37 @@ public class EthanApiPlugin extends Plugin {
 //        pathLength.setAccessible(false);
 //        return path;
 //    }
+
     @SneakyThrows
     public static HeadIcon getHeadIcon(NPC npc) {
-        Field vi = npc.getClass().getDeclaredField("ap");
+        Field vi = npc.getClass().getDeclaredField("vj");
         vi.setAccessible(true);
         Object viObj = vi.get(npc);
-        if (viObj == null) {
+        if(viObj==null){
             vi.setAccessible(false);
             return getOldHeadIcon(npc);
         }
-        Field adField = viObj.getClass().getDeclaredField("ad");
+        Field adField = viObj.getClass().getDeclaredField("ay");
         adField.setAccessible(true);
         short[] ad = (short[]) adField.get(viObj);
         adField.setAccessible(false);
         vi.setAccessible(false);
-        if (ad == null) {
+        if(ad==null){
             return getOldHeadIcon(npc);
         }
-        if (ad.length == 0) {
+        if(ad.length==0){
             return getOldHeadIcon(npc);
         }
-        short headIcon = ad[0];
-        if (headIcon == -1) {
+        short headIcon  = ad[0];
+        if(headIcon==-1){
             return getOldHeadIcon(npc);
         }
         return HeadIcon.values()[headIcon];
     }
 
     @SneakyThrows
-    public static HeadIcon getOldHeadIcon(NPC npc) {
-        Method getHeadIconMethod = null;
+    public static HeadIcon getOldHeadIcon(NPC npc){
+                Method getHeadIconMethod = null;
         for (Method declaredMethod : npc.getComposition().getClass().getDeclaredMethods()) {
             if (declaredMethod.getName().length() == 2 && declaredMethod.getReturnType() == short.class && declaredMethod.getParameterCount() == 1) {
                 getHeadIconMethod = declaredMethod;
@@ -251,7 +252,7 @@ public class EthanApiPlugin extends Plugin {
                 short headIcon = -1;
                 try {
                     headIcon = (short) getHeadIconMethod.invoke(npc.getComposition(), 0);
-                } catch (Exception e) {
+                }catch (Exception e){
                     //nothing
                 }
                 getHeadIconMethod.setAccessible(false);
@@ -309,13 +310,13 @@ public class EthanApiPlugin extends Plugin {
         boolean[][] visited = new boolean[104][104];
         int[][] flags = client.getCollisionMaps()[client.getPlane()].getFlags();
         WorldPoint playerLoc = client.getLocalPlayer().getWorldLocation();
-        int firstPoint = (playerLoc.getX() - client.getBaseX() << 16) | playerLoc.getY() - client.getBaseY();
+        int firstPoint = (playerLoc.getX()-client.getBaseX() << 16) | playerLoc.getY()-client.getBaseY();
         ArrayDeque<Integer> queue = new ArrayDeque<>();
         queue.add(firstPoint);
         while (!queue.isEmpty()) {
             int point = queue.poll();
-            short x = (short) (point >> 16);
-            short y = (short) point;
+            short x =(short)(point >> 16);
+            short y = (short)point;
             if (y < 0 || x < 0 || y > 104 || x > 104) {
                 continue;
             }
@@ -398,7 +399,7 @@ public class EthanApiPlugin extends Plugin {
         return null;
     }
 
-    public static int getFirstFreeSlot(WidgetInfo container) {
+    public int getFirstFreeSlot(WidgetInfo container) {
         Widget[] items = client.getWidget(container).getDynamicChildren();
         for (int i = 0; i < items.length; i++) {
             if (items[i].getItemId() == 6512) {
@@ -409,7 +410,7 @@ public class EthanApiPlugin extends Plugin {
     }
 
     @Deprecated
-    public static int getEmptySlots(WidgetInfo widgetInfo) {
+    public int getEmptySlots(WidgetInfo widgetInfo) {
         List<Widget> inventoryItems = Arrays.asList(client.getWidget(widgetInfo.getId()).getDynamicChildren());
         return (int) inventoryItems.stream().filter(item -> item.getItemId() == 6512).count();
     }
@@ -420,7 +421,7 @@ public class EthanApiPlugin extends Plugin {
     }
 
     @Deprecated
-    public static TileObject findObject(String objectName) {
+    public TileObject findObject(String objectName) {
         ArrayList<TileObject> validObjects = new ArrayList<>();
         for (Tile[][] tile : client.getScene().getTiles()) {
             for (Tile[] tiles : tile) {
@@ -469,7 +470,8 @@ public class EthanApiPlugin extends Plugin {
                             }
                             doAction = classesVector.get(i).getDeclaredMethods()[i1];
                         }
-                    } catch (NoClassDefFoundError ignored) {
+                    } catch (NoClassDefFoundError | VerifyError ignored) {
+
                     }
                 } catch (Exception ignored) {
                 }
@@ -480,16 +482,8 @@ public class EthanApiPlugin extends Plugin {
         doAction.setAccessible(false);
     }
 
-    // BACKUP FOR OTHER PLUGINS I HAVE NOT UDPDATED/CBA
-    // REMOVE LATER
-    @SneakyThrows
-    public static void invoke(int var0, int var1, int var2, int var3, int var4, String var6, String var7, int var8,
-                              int var9) {
-        invoke(var0, var1, var2, var3, var4, -1, var6, var7, var8, var9);
-    }
-
     @Deprecated
-    public static TileObject findObject(int id) {
+    public TileObject findObject(int id) {
         ArrayList<TileObject> validObjects = new ArrayList<>();
         Arrays.stream(client.getScene().getTiles()).flatMap(Arrays::stream).flatMap(Arrays::stream).filter(Objects::nonNull).filter(tile -> tile.getGameObjects() != null && tile.getGameObjects().length != 0).forEach(tile ->
         {
@@ -503,7 +497,7 @@ public class EthanApiPlugin extends Plugin {
     }
 
     @Deprecated
-    public static Widget getItemFromList(int[] list, WidgetInfo container) {
+    public Widget getItemFromList(int[] list, WidgetInfo container) {
         for (int i : list) {
             Widget item = getItem(i, container);
             if (item != null) {
@@ -514,7 +508,7 @@ public class EthanApiPlugin extends Plugin {
     }
 
     @Deprecated
-    public static int checkIfWearing(int[] ids) {
+    public int checkIfWearing(int[] ids) {
 
         if (client.getItemContainer(InventoryID.EQUIPMENT) != null) {
             Item[] equipment = client.getItemContainer(InventoryID.EQUIPMENT).getItems();
@@ -710,382 +704,249 @@ public class EthanApiPlugin extends Plugin {
     }
 
 
-    public static ArrayList<WorldPoint> pathToGoal(WorldPoint goal, HashSet<WorldPoint> dangerous) {
-        ArrayList<List<WorldPoint>> paths = new ArrayList<>();
-        paths.add(List.of(client.getLocalPlayer().getWorldLocation()));
-        HashSet<WorldPoint> walkableTiles = new HashSet<>(reachableTiles());
-        HashSet<WorldPoint> impassibleTiles = new HashSet<>(EthanApiPlugin.sceneWorldPoints());
-        impassibleTiles.removeIf(walkableTiles::contains);
-        HashSet<WorldPoint> goalSet = new HashSet<>();
-        goalSet.add(goal);
-        return pathToGoal(goalSet, paths, impassibleTiles, dangerous, new HashSet<>(reachableTiles()), new HashSet<>());
+    public static List<WorldPoint> pathToGoalSetFromPlayerUsingReachableTiles(HashSet<WorldPoint> goalSet, HashSet<WorldPoint> dangerous, HashSet<WorldPoint> impassible) {
+        return pathToGoalSet(goalSet, dangerous, impassible, new HashSet<>(reachableTiles()), playerPosition());
     }
 
-    public static ArrayList<WorldPoint> pathToGoal(HashSet<WorldPoint> goalSet, HashSet<WorldPoint> dangerous) {
-        ArrayList<List<WorldPoint>> paths = new ArrayList<>();
-        paths.add(List.of(client.getLocalPlayer().getWorldLocation()));
-        HashSet<WorldPoint> walkableTiles = new HashSet<>(reachableTiles());
-        HashSet<WorldPoint> impassibleTiles = new HashSet<>(EthanApiPlugin.sceneWorldPoints());
-        impassibleTiles.removeIf(walkableTiles::contains);
-        return pathToGoal(goalSet, paths, impassibleTiles, dangerous, new HashSet<>(reachableTiles()), new HashSet<>());
+    public static List<WorldPoint> pathToGoalSetFromPlayerNoCustomTiles(HashSet<WorldPoint> goalSet) {
+        return pathToGoalSet(goalSet, EMPTY_SET, EMPTY_SET, new HashSet<>(reachableTiles()), playerPosition());
+    }
+    public static List<WorldPoint> pathToGoalFromPlayerUsingCustomDangerous(WorldPoint goal, HashSet<WorldPoint> dangerous) {
+        return pathToGoalSet(new HashSet<>(List.of(goal)), dangerous, EMPTY_SET, new HashSet<>(reachableTiles()), playerPosition());
     }
 
-    public static ArrayList<WorldPoint> pathToGoal(WorldPoint goal, HashSet<WorldPoint> dangerous, HashSet<WorldPoint> impassible) {
-
-        ArrayList<List<WorldPoint>> paths = new ArrayList<>();
-        paths.add(List.of(client.getLocalPlayer().getWorldLocation()));
-        HashSet<WorldPoint> goalSet = new HashSet<>();
-        goalSet.add(goal);
-        return pathToGoal(goalSet, paths, impassible, dangerous, new HashSet<>(reachableTiles()), new HashSet<>());
+    public static List<WorldPoint> pathToGoalFromPlayerUsingReachableTiles(WorldPoint goal, HashSet<WorldPoint> dangerous, HashSet<WorldPoint> impassible) {
+        return pathToGoalSet(new HashSet<>(List.of(goal)), dangerous, impassible, new HashSet<>(reachableTiles()), playerPosition());
     }
 
-    public static ArrayList<WorldPoint> pathToGoal(WorldPoint goal, HashSet<WorldPoint> walkable, HashSet<WorldPoint> dangerous, HashSet<WorldPoint> impassible) {
-        ArrayList<List<WorldPoint>> paths = new ArrayList<>();
-        paths.add(List.of(client.getLocalPlayer().getWorldLocation()));
-        HashSet<WorldPoint> goalSet = new HashSet<>();
-        goalSet.add(goal);
-        return pathToGoal(goalSet, paths, impassible, dangerous, walkable, new HashSet<>());
+    public static List<WorldPoint> pathToGoalFromPlayerNoCustomTiles(WorldPoint goal) {
+        return pathToGoalSet(new HashSet<>(List.of(goal)), EMPTY_SET, EMPTY_SET, new HashSet<>(reachableTiles()), playerPosition());
     }
 
-
-    //this method paths locally aka within the current scene. It is not a fully fledged worldwalker
-    @SneakyThrows
-    public static ArrayList<WorldPoint> pathToGoal(HashSet<WorldPoint> goal, ArrayList<List<WorldPoint>> paths,
-                                                   HashSet<WorldPoint> impassible, HashSet<WorldPoint> dangerous,
-                                                   HashSet<WorldPoint> walkable, HashSet<WorldPoint> walked) {
-        Queue<List<WorldPoint>> queue = new LinkedList<>(paths);
-        if (queue.isEmpty()) {
-            queue.add(List.of(client.getLocalPlayer().getWorldLocation()));
-        }
-        ArrayDeque<Node> nodeQueue = new ArrayDeque<>();
-        if (Collections.disjoint(walkable, goal)) {
+    public static List<WorldPoint> pathToGoalSet(HashSet<WorldPoint> goalSet, HashSet<WorldPoint> dangerous, HashSet<WorldPoint> impassible, HashSet<WorldPoint> walkable, WorldPoint starting) {
+        if (Collections.disjoint(goalSet, walkable)) {
             return null;
         }
+        ArrayDeque<Node> queue = new ArrayDeque<Node>();
+        HashSet<WorldPoint> visited = new HashSet<>();
+        visited.add(starting);
+        queue.add(new Node(starting));
         while (!queue.isEmpty()) {
-            List<WorldPoint> path = queue.poll();
+            Node current = queue.poll();
+            if (goalSet.contains(current.getData())) {
+                List<WorldPoint> ret = new ArrayList<>();
+                while (current != null) {
+                    ret.add(current.getData());
+                    current = current.getPrevious();
+                }
+                Collections.reverse(ret);
+                ret.remove(0);
+                return ret;
+            }
             for (int[] direction : directionsMap) {
                 int x = direction[0];
                 int y = direction[1];
                 if (x == 0 && y == 0) {
                     continue;
                 }
-                if (path.size() == 0) {
+                WorldPoint currentPoint = current.getData();
+                WorldPoint nextPoint = current.getData().dy(y).dx(x);
+                if (!walkable.contains(nextPoint) || impassible.contains(nextPoint) || dangerous.contains(nextPoint) || visited.contains(nextPoint)) {
                     continue;
                 }
-                WorldPoint point = path.get(path.size() - 1).dy(y).dx(x);
-                WorldPoint originalPoint = path.get(path.size() - 1);
-                if (!walkable.contains(point) || impassible.contains(point) || dangerous.contains(point)) {
-//                        						System.out.println("rejecting 1");
-                    continue;
-                }
-                if (walked.contains(point)) {
-                    continue;
-                }
-
-                //far movements
-                //Far West
                 if (x == -2 && y == 0) {
-                    if (farWObstructed(originalPoint, impassible, walkable)) {
+                    if (farWObstructed(currentPoint, impassible, walkable)) {
                         continue;
                     }
+                    visited.add(nextPoint);
+                    queue.add(new Node(nextPoint, current));
+                    continue;
                 }
                 //Far East
                 if (x == 2 && y == 0) {
-                    if (farEObstructed(originalPoint, impassible, walkable)) {
+                    if (farEObstructed(currentPoint, impassible, walkable)) {
                         continue;
                     }
+                    visited.add(nextPoint);
+                    queue.add(new Node(nextPoint, current));
+                    continue;
                 }
                 //Far South
                 if (x == 0 && y == -2) {
-                    if (farSObstructed(originalPoint, impassible, walkable)) {
+                    if (farSObstructed(currentPoint, impassible, walkable)) {
                         continue;
                     }
+                    visited.add(nextPoint);
+                    queue.add(new Node(nextPoint, current));
+                    continue;
                 }
                 //Far North
                 if (x == 0 && y == 2) {
-                    if (farNObstructed(originalPoint, impassible, walkable)) {
+                    if (farNObstructed(currentPoint, impassible, walkable)) {
                         continue;
                     }
+                    visited.add(nextPoint);
+                    queue.add(new Node(nextPoint, current));
+                    continue;
                 }
                 //far movements
                 //L movement in here so i dont get lost in the saauce down there
                 if (Math.abs(x) + Math.abs(y) == 3) {
                     //North east
                     if (x == 1 && y == 2) {
-                        if (northEastLObstructed(originalPoint, impassible, walkable)) {
+                        if (northEastLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //East north
                     if (x == 2 && y == 1) {
-                        if (eastNorthLObstructed(originalPoint, impassible, walkable)) {
+                        if (eastNorthLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //East south
                     if (x == 2 && y == -1) {
-                        if (eastSouthLObstructed(originalPoint, impassible, walkable)) {
+                        if (eastSouthLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //South east
                     if (x == 1 && y == -2) {
-                        if (southEastLObstructed(originalPoint, impassible, walkable)) {
+                        if (southEastLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //South west
                     if (x == -1 && y == -2) {
-                        if (southWestLObstructed(originalPoint, impassible, walkable)) {
+                        if (southWestLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //West south
                     if (x == -2 && y == -1) {
-                        if (westSouthLObstructed(originalPoint, impassible, walkable)) {
+                        if (westSouthLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //West north
                     if (x == -2 && y == 1) {
-                        if (westNorthLObstructed(originalPoint, impassible, walkable)) {
+                        if (westNorthLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //North west
                     if (x == -1 && y == 2) {
-                        if (northWestLObstructed(originalPoint, impassible, walkable)) {
+                        if (northWestLObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                 } else {
                     //One tile movement
 
                     //diagonal SE
                     if (x == 1 && y == -1) {
-                        if (seObstructed(originalPoint, impassible, walkable)) {
+                        if (seObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
-
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //diagonal NE
                     if (x == 1 && y == 1) {
-                        if (neObstructed(originalPoint, impassible, walkable)) {
+                        if (neObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //diagonal NW
                     if (x == -1 && y == 1) {
-                        if (nwObstructed(originalPoint, impassible, walkable)) {
+                        if (nwObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //diagonal SW
                     if (x == -1 && y == -1) {
-                        if (swObstructed(originalPoint, impassible, walkable)) {
+                        if (swObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
 
                     //Two tile movement
 
                     //Diagonal SW
                     if (x == -2 && y == -2) {
-                        if (farSWObstructed(originalPoint, impassible, walkable)) {
+                        if (farSWObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //Diagonal NW
                     if (x == -2 && y == 2) {
-                        if (farNWObstructed(originalPoint, impassible, walkable)) {
+                        if (farNWObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //Diagonal SE
                     if (x == 2 && y == -2) {
-                        if (farSEObstructed(originalPoint, impassible, walkable)) {
+                        if (farSEObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                     //Diagonal NE
                     if (x == 2 && y == 2) {
-                        if (farNEObstructed(originalPoint, impassible, walkable)) {
+                        if (farNEObstructed(currentPoint, impassible, walkable)) {
                             continue;
                         }
+                        visited.add(nextPoint);
+                        queue.add(new Node(nextPoint, current));
+                        continue;
                     }
                 }
-                ArrayList<WorldPoint> newPath = new ArrayList<>(path);
-                //					System.out.println("adding: "+counter);
-                //					counter++;
-                newPath.add(point);
-                walked.add(point);
-                if (goal.contains(point)) {
-                    return newPath;
-                }
-                queue.add(newPath);
             }
         }
         return null;
     }
-
-//    	@SneakyThrows
-//    	public static List<WorldPoint> pathToGoal(WorldPoint goal, HashMap<WorldPoint, List<WorldPoint>> paths,
-//    											  HashSet<WorldPoint> impassible, HashSet<WorldPoint> dangerous,
-//    											  HashSet<WorldPoint> walkable)
-//    	{
-//    		HashMap<WorldPoint, List<WorldPoint>> paths2 = new HashMap<>(paths);
-//    		if (!walkable.contains(goal))
-//    		{
-//    			return null;
-//    		}
-//    		for (Map.Entry<WorldPoint, List<WorldPoint>> worldPointListEntry : paths.entrySet())
-//    		{
-//    			//			int counter = 1;
-//    			for (int x = -2; x < 3; x++)
-//    			{
-//    				b:
-//    				for (int y = -2; y < 3; y++)
-//    				{
-//    					if (x == 0 && y == 0)
-//    					{
-//    						continue;
-//    					}
-//
-//    					//L movement banned
-//    					if (Math.abs(x) + Math.abs(y) == 3)
-//    					{
-//    						continue;
-//    					}
-//    					//L movement banned
-//    					WorldPoint point = worldPointListEntry.getKey().dy(x).dx(y);
-//    					if (!walkable.contains(point) || impassible.contains(point) || dangerous.contains(point))
-//    					{
-//    						//						System.out.println("rejecting 1");
-//    						continue;
-//    					}
-//
-//    					if (x == -2 && y == -2)
-//    					{
-//    						if (farSWObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == -2 && y == 2)
-//    					{
-//    						if (farNWObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 2 && y == -2)
-//    					{
-//    						if (farSEObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 2 && y == 2)
-//    					{
-//    						if (farNEObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == -2 && y == 0)
-//    					{
-//    						if (farWObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 2 && y == 0)
-//    					{
-//    						if (farEObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 0 && y == -2)
-//    					{
-//    						if (farSObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 0 && y == 2)
-//    					{
-//    						if (farNObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == -1 && y == -1)
-//    					{
-//    						if (swObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == -1 && y == 1)
-//    					{
-//    						if (nwObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 1 && y == -1)
-//    					{
-//    						if (seObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					if (x == 1 && y == 1)
-//    					{
-//    						if (neObstructed(worldPointListEntry.getKey(), impassible, walkable))
-//    						{
-//    							continue;
-//    						}
-//    					}
-//    					for (Map.Entry<WorldPoint, List<WorldPoint>> worldPointListEntry2 : paths.entrySet())
-//    					{
-//    						if (worldPointListEntry2.getValue().contains(point))
-//    						{
-//    							continue b;
-//    						}
-//    					}
-//    					List<WorldPoint> newPath = new ArrayList<>(worldPointListEntry.getValue());
-//    					//					System.out.println("adding: "+counter);
-//    					//					counter++;
-//    					newPath.add(point);
-//    					if (point.getX() == goal.getX() && point.getY() == goal.getY())
-//    					{
-//    						return newPath;
-//    					}
-//    					paths2.put(point, newPath);
-//    				}
-//    			}
-//    			paths2.put(worldPointListEntry.getKey(), null);
-//    		}
-//    		paths2.entrySet().removeIf(x -> x.getValue() == null);
-//    		if (paths2.isEmpty())
-//    		{
-//    			System.out.println("path not possible");
-//    			return null;
-//    		}
-//    		return pathToGoal(goal, paths2, impassible, dangerous, walkable);
-//    	}
-//
-//    static boolean nwObstructed(WorldPoint starting, HashSet<WorldPoint> impassible, HashSet<WorldPoint> walkable) {
-//        if (impassible.contains(starting.dx(-1).dy(0)) || !walkable.contains(starting.dx(-1).dy(0))) {
-//            return true;
-//        }
-//        if (impassible.contains(starting.dx(0).dy(1)) || !walkable.contains(starting.dx(0).dy(1))) {
-//            return true;
-//        }
-//        return false;
-//    }
 
 
     static boolean nwObstructed(WorldPoint starting, HashSet<WorldPoint> impassible, HashSet<WorldPoint> walkable) {
