@@ -80,10 +80,10 @@ public class AutoCraftingPlugin extends Plugin {
         });
 
     if (config.ARMOR_TYPE().getLeatherNeeded() <= Inventory.getItemAmount(
-        config.LEATHER_TYPE().getLeatherType())) {
+        config.LEATHER_TYPE().getLeatherType()) && hasNeedleAndThread()) {
 
       if (Inventory.search().withId(config.LEATHER_TYPE().getLeatherType()).result().size()
-          >= config.ARMOR_TYPE().getLeatherNeeded()) {
+          > config.ARMOR_TYPE().getLeatherNeeded()) {
         if (lastCrafted == 0) {
           Widgets.search().withTextContains("Enter amount:").first().ifPresent(w -> {
             client.runScript(299, 1, 0, 0);
@@ -163,5 +163,9 @@ public class AutoCraftingPlugin extends Plugin {
     client.getCanvas().dispatchEvent(e);
   }
 
+  private boolean hasNeedleAndThread() {
+    return !Inventory.search().withName("Needle").result().isEmpty() &&
+            !Inventory.search().withName("Thread").result().isEmpty();
+  }
 
 }

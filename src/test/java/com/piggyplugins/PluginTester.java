@@ -7,6 +7,7 @@ import com.piggyplugins.ItemCombiner.ItemCombinerPlugin;
 import com.piggyplugins.LeftClickBlackJack.LeftClickBlackJackPlugin;
 import com.piggyplugins.PiggyUtils.PiggyUtilsPlugin;
 import com.piggyplugins.RooftopAgility.RooftopAgilityPlugin;
+import com.piggyplugins.SixHourLog.SixHourLogPlugin;
 import com.polyplugins.AutoBoner.AutoBonerPlugin;
 import com.wigglydonplugins.AutoCrafting.AutoCraftingPlugin;
 import com.wigglydonplugins.AutoHerblore.AutoHerblorePlugin;
@@ -27,7 +28,8 @@ public class PluginTester {
                     AutoVorkathPlugin.class,
                     AutoCraftingPlugin.class,
                     AutoHerblorePlugin.class,
-                    RooftopAgilityPlugin.class
+                    RooftopAgilityPlugin.class,
+                    SixHourLogPlugin.class
             );
             RuneLite.main(args);
         } catch (Exception e) {
