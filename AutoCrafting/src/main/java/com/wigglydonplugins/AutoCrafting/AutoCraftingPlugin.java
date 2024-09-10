@@ -70,7 +70,7 @@ public class AutoCraftingPlugin extends Plugin {
     }
 
     //leather crafting animation
-    if (client.getLocalPlayer().getAnimation() == 1249 && !Inventory.full()) {
+    if (client.getLocalPlayer().getAnimation() == 1249) {
       lastCrafted = 3;
     }
 
